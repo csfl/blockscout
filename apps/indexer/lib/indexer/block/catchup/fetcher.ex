@@ -276,6 +276,10 @@ defmodule Indexer.Block.Catchup.Fetcher do
     Logger.error(fn -> ["Failed to validate: ", inspect(changesets), ". Retrying."] end, block_number: number)
   end
 
+  defp log_error(%{number: number, step: step, reason: reason}) do
+    Logger.error(fn -> ["Failed to fetch ", to_string(step), ": ", inspect(reason)] end, block_umber: number, step: step)
+  end
+
   defp log_error(%{number: number, step: step, failed_value: failed_value, changes_so_far: _}) do
     Logger.error(
       fn ->
