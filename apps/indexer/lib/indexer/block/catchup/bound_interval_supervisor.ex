@@ -316,7 +316,7 @@ defmodule Indexer.Block.Catchup.BoundIntervalSupervisor do
   defp from_iodata(:latest), do: "latest"
 
   defp from_iodata(first_block_number) when is_integer(first_block_number) and first_block_number >= 0 do
-    to_string(first_block_number)
+    ["before ", to_string(first_block_number)]
   end
 
   defp shrunk_iodata(false, _), do: []
