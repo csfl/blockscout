@@ -16,6 +16,7 @@ defmodule Indexer.Block.Realtime.Fetcher do
   alias EthereumJSONRPC.{FetchedBalances, Subscription}
   alias Explorer.Chain
   alias Indexer.{AddressExtraction, Block, TokenBalances, Tracer}
+  alias Indexer.Block.ConsensusEnsurer
   alias Indexer.Block.Realtime.TaskSupervisor
 
   @behaviour Block.Fetcher
@@ -169,7 +170,10 @@ defmodule Indexer.Block.Realtime.Fetcher do
   @decorate span(tracer: Tracer)
   defp do_fetch_and_import_block(block_number_to_fetch, block_fetcher, retry) do
     case fetch_and_import_range(block_fetcher, block_number_to_fetch..block_number_to_fetch) do
-      {:ok, %{inserted: _, errors: []}} ->
+      {:ok, %{inserted: %{blocks: [%{parent_hash: parent_hash, number: number}]}, errors: []}} ->
+        args = [parent_hash, number - 1, block_fetcher]
+        Task.Supervisor.start_child(TaskSupervisor, ConsensusEnsurer, :perform, args)
+
         Logger.debug(fn ->
           ["realtime indexer fetched and imported block ", to_string(block_number_to_fetch)]
         end)
